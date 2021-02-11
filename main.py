@@ -4,26 +4,27 @@ except:
     from html.parser import HTMLParser
 import requests
 
-class MyHTMLParser(HTMLParser):
+class MyHTMLParser(HTMLParser, nextAnchorName=''):
     def __init__(self):
         HTMLParser.__init__(self)
         self.data = []   # 定义data数组用来存储html中的数据
-        self.links = [] 
+        self.links = ''
         self.flag = False
             
     def handle_starttag(self, tag, attrs):
-        print('<%s>' % tag)
+#        print('<%s>' % tag)
         if tag == "a":
-            self.flag = True
             if len(attrs) == 0: pass
             else:
-                for (variable, value)  in attrs:
-                    if variable == "href":
-                        self.links.append(value)
+                if self.nextAnchorName != '':
+                    for key, value in atrs:
+                        if value == self.nextAnchorName:
+                            self.flag = True
+                   
      
     def handle_endtag(self, tag):
         self.flag = False
-        print('</%s>' % tag)
+#        print('</%s>' % tag)
  
     def handle_data(self, data):
         if self.flag == True:
@@ -31,8 +32,6 @@ class MyHTMLParser(HTMLParser):
 '''
     def handle_startendtag(self, tag, attrs):
         print('<%s/>' % tag)
- 
- 
     def handle_comment(self, data):
         print('<!--', data, '-->')
  
@@ -46,14 +45,9 @@ class MyHTMLParser(HTMLParser):
 if __name__ == "__main__":
     url = 'http://www.jokeji.cn/list13_1.htm'
     res = requests.get(url)
-    html_code = '''<html>
-            <head>这是头标签</head>
-            <body>
-                <!-- test html parser -->
-                <p>Some <a href=\"#\">html</a> HTML&nbsp;&#1234; Ӓtutorial...<br>END</p>
-            </body></html>'''
+    res.encoding = "gb2312"
     parser = MyHTMLParser()
-    parser.feed(html_code)
-    parser.close()
+    parser.feed(res.text)
+    res.close()
     print(parser.data)
-    print(parser.links)
+#    print(parser.links)
