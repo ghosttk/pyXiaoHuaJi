@@ -1,53 +1,27 @@
-try:
-    from HTMLParser import HTMLParser
-except:
-    from html.parser import HTMLParser
-import requests
+# -*- coding: utf-8 -*-
+import urllib.request
+import urllib.parse
+import re
 
-class MyHTMLParser(HTMLParser, nextAnchorName=''):
-    def __init__(self):
-        HTMLParser.__init__(self)
-        self.data = []   # 定义data数组用来存储html中的数据
-        self.links = ''
-        self.flag = False
-            
-    def handle_starttag(self, tag, attrs):
-#        print('<%s>' % tag)
-        if tag == "a":
-            if len(attrs) == 0: pass
-            else:
-                if self.nextAnchorName != '':
-                    for key, value in atrs:
-                        if value == self.nextAnchorName:
-                            self.flag = True
-                   
-     
-    def handle_endtag(self, tag):
-        self.flag = False
-#        print('</%s>' % tag)
- 
-    def handle_data(self, data):
-        if self.flag == True:
-            print('url_data===>', data)
-'''
-    def handle_startendtag(self, tag, attrs):
-        print('<%s/>' % tag)
-    def handle_comment(self, data):
-        print('<!--', data, '-->')
- 
-    def handle_entityref(self, name):
-        print('&%s;' % name)
- 
-    def handle_charref(self, name):
-        print('&#%s;' % name)
-'''
-         
+def parseHtml(url, BodyPattern, UrlPattern):
+     baseUrl = re.match('https*://.*?/', url)
+     #url = urllib.parse.quote(url, safe='string.printable')
+     res = urllib.request.urlopen(url)
+     Content = res.read().decode('gb2312', 'ignore')
+     #print(Content)
+     body = re.findall(BodyPattern, Content, re.S)
+     nextLink = re.search(UrlPattern, Content, re.S).group(1)
+     if nextLink != '':
+         nextLink = re.sub(r'/\d*?.htm$', '/'+nextLink, url)
+     return body, nextLink
 if __name__ == "__main__":
-    url = 'http://www.jokeji.cn/list13_1.htm'
-    res = requests.get(url)
-    res.encoding = "gb2312"
-    parser = MyHTMLParser()
-    parser.feed(res.text)
-    res.close()
-    print(parser.data)
-#    print(parser.links)
+     url = 'http://www.jokeji.cn/jokehtml/mj/202101241746485.htm'
+     BodyPattern = '<span id=\"text110\">(.*)?<\/span>'
+     UrlPattern = '<div class=zw_page1>.*?<a href=\"(.*?)\">'
+     body, nextLink = parseHtml(url, BodyPattern, UrlPattern)
+     '''
+     while nextLink !='':
+         print(nextLink)
+         body, nextLink = parseHtml(nextLink, BodyPattern, UrlPattern)
+         #print(body)
+'''
